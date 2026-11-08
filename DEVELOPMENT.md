@@ -1,7 +1,5 @@
-<a id="development"></a>
 # 开发
 
-<a id="ci-cache-baseline"></a>
 ## CI 缓存基线
 
 CI 在相关 `main` 推送与 pull request 中运行三平台检查、Linux `test-rpc` 构建、Rust 回归和驱动单元测试。PR 仍必须执行完整桌面 E2E 套件；main 生产依赖缓存，不重复该套件。保持 push 和 pull-request 路径过滤一致。`check` 与 `e2e` 作业 ID 属于默认 `Swatinem/rust-cache` 键的一部分，须保留，供 PR 恢复兼容的基准分支缓存。action 还隔离 runner 系统／架构、Rust 工具链和 Cargo 环境；check（生产与 `test-rpc`）、E2E debug（`test-rpc`）及 release 构建保持独立。Release 缓存不变。
@@ -18,7 +16,6 @@ gh run view RUN_ID --repo OWNER/REPO --log
 
 确认新 PR 日志恢复生产者的缓存键，而非仅命中先前 PR 的缓存。比较中纳入上传和下载开销。对每个作业，用新增热 `main` 作业时长除以冷 PR 与热 PR 的时长差，估算每次相关 `main` 推送需要多少次新 PR 验证才能抵消新增 runner 时间。按系统分别报告 runner 秒数，不将其作为费用估算。初始缓存填充、淘汰、依赖变化和 runner 波动还会增加成本。实测工作量不足以证明预热有价值的作业保留原行为。
 
-<a id="cache-measurements-2026-10-25"></a>
 ### 缓存测量（2026-10-25）
 
 在隔离 fork 中，以生产者分支作为 PR 基准测量，使用与 `main` 相同的[基准分支缓存访问规则](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching#restrictions-for-accessing-a-cache)。应用源码、lockfile 和 Rust 工具链不变；fork 起初没有缓存。冷验证也执行完整桌面套件，热生产者使用上述最终 main 行为。每种配置只测一次，不保证未来 runner 表现。
@@ -39,7 +36,6 @@ gh run view RUN_ID --repo OWNER/REPO --log
 
 新 PR 恢复 Rust 缓存步骤在 Linux／macOS／Windows 分别耗时 9／9／28 秒；生产 `cargo check` 为 2／8／44 秒，冷运行则为 82／180／200 秒。四份 Rust 缓存共 2.10 GB，另有 pip 11.2 MB。键保留独立 `check`／`e2e`、系统／架构与 Rust／Cargo 哈希。缓存 API 仅列出生产者分支引用，新 PR 日志报告精确键恢复成功，证明跨分支复用。热 PR E2E 构建耗时 6 秒，冷为 139 秒，缓存恢复 13 秒。桌面套件本身由 262 波动至 284 秒，不受此缓存加速。两次完整验证均通过 94 个 E2E 用例（保留已有两个 Windows 专用跳过项）、53 个 Rust 回归和六个驱动测试。这只验证 fork 中的机制；合并后上游 `main` 必须先成功运行，上游 PR 才能受益。
 
-<a id="rust-checks"></a>
 ## Rust 检查
 
 使用当前 Rust 稳定工具链（edition 2024）、Git，以及 README.md 说明的 GPUI 平台依赖。
@@ -52,7 +48,6 @@ cargo test
 cargo test --features test-rpc
 ```
 
-<a id="end-to-end-tests"></a>
 ## 端到端测试
 
 原 Shell 套件已迁移为 Python 3.12+ 与 pytest。测试启动真实 GPUI 可执行文件，通过桌面鼠标点击控件，经回环 JSON-RPC 观察已渲染视图树，并断言实际 Git 索引、文件、分支、stash 条目和本地远端。
@@ -88,7 +83,6 @@ Windows 用 `--app-binary target/debug/git_master_e2e.exe` 复用先前专用构
 
 各测试使用独立临时仓库、合成身份、禁用的个人／系统 Git 配置、仅本地远端和独立回环端口。夹具拆除时终止每个应用进程。超时轮询可观察条件，不假设操作在固定休眠后完成。测试代码不得操作开发者仓库。
 
-<a id="p0p1-coverage"></a>
 ## P0/P1 覆盖
 
 P0 表示数据完整性或破坏性操作前的明确批准。P1 表示核心导航、历史、预览、子模块或同步流程。这是项目测试优先级，不代表每项 UI 交互都有穷尽覆盖。
@@ -108,7 +102,6 @@ P0 表示数据完整性或破坏性操作前的明确批准。P1 表示核心�
 | P1 | Fetch／Pull／Push | 获取引用但不 checkout；pull 恢复自动 stash 的本地编辑；push 到达本地远端；同步计数刷新 |
 | P1 | Fetch All／Switch All to Main | 远端失败不妨碍其他更新；切换默认分支；未跟踪工作保留 |
 
-<a id="coverage-audit-additions"></a>
 ### 覆盖审计新增项
 
 套件目前有 99 个用例：26 个 P0、73 个 P1。审计将工作树操作、历史控件、仓库导航、批处理和远端操作处理函数，与可执行 UI 测试逐项比较。在上述初始矩阵之外新增：
@@ -133,10 +126,8 @@ P0 表示数据完整性或破坏性操作前的明确批准。P1 表示核心�
 
 `GIT_MASTER_TEST_CONFIG_DIR` 在测试构建启动线程前，重定向 libgit2 的 system／global／XDG／ProgramData 配置搜索路径。Git 子进程另用 `GIT_CONFIG_GLOBAL` 和 `GIT_CONFIG_NOSYSTEM`；两种配置读取器都必须隔离。生产构建不读取此测试专用设置。
 
-<a id="test-observation-and-confirmation-boundary"></a>
 ## 测试观察与确认边界
 
-<a id="failure-cancellation-and-retry-recovery"></a>
 ### 失败、取消与重试恢复
 
 四个桌面用例覆盖分支删除拒绝、checkout 拒绝、stash 删除取消，以及 stash Apply 多次失败后重试成功。它们检查历史／过滤器恢复、Git 引用、索引／文件，以及每次尝试的新完成结果。三个用例在修复前可执行文件上失败，重复 Apply 是额外恢复覆盖。分支变更失败时保留先前可见分支，据此重建历史。取消显式发布取消结果并释放忙碌状态。
@@ -145,7 +136,6 @@ P0 表示数据完整性或破坏性操作前的明确批准。P1 表示核心�
 
 另一个 Windows 回归将已完成扫描保留在 worker，打开并取消原生工作区选择器后再释放结果。目录提示归属与扫描任务归属分离的修复之前，该用例失败。`GIT_MASTER_TEST_SCAN_GATE` 仅在测试构建和 worker 线程有效，限时 30 秒，夹具在 `finally` 释放。文件夹切换用例等待原生对话框激活，通过标准原生控件消息填入并验证焦点 Edit 控件，用 Windows UI Automation 观察预期文件夹内容，再点击 Select Folder。shell 导航重建控件时只重试 ElementNotAvailableException 观察；预期文件夹条目仍必须出现。这两个原生对话框用例需要 Windows PowerShell／UIAutomationClient；其他用例仍使用普通桌面点击与只读应用 RPC 观察。
 
-<a id="asynchronous-navigation-regressions"></a>
 ### 异步导航回归
 
 五个桌面用例在有时限的 pre-push、reference-transaction 和 post-checkout hook 暂停实际 Git 操作。它们在 Push 待完成时加载另一仓库的 Change／Stash，删除后保留另一仓库分支过滤器，在 A→B→A 导航后拒绝旧历史快照，以及按父仓库身份隔离相同相对路径的子模块。四个用例在修复前失败；子模块用例是额外边界检查。释放文件控制顺序，即使断言失败，夹具拆除也释放全部 hook；不靠固定延迟判定正确性。
@@ -163,7 +153,6 @@ P0 表示数据完整性或破坏性操作前的明确批准。P1 表示核心�
 操作确认在生产和测试构建中使用同一跟随主题的 GPUI 组件。测试构建添加边界和状态观测，让桌面测试能点击真实 Cancel／Confirm 控件并执行批准回调。破坏性提示初始焦点为 Cancel，支持 Escape、Tab／方向键、Enter 和 Space。结构化风险字段和预览表通过工具包的字符串提示接口，以 JSON 形式传递；原生目录／文件选择器仍独立。视觉验收要求截图和对应状态比较。
 
 
-<a id="failure-artifacts-and-ci"></a>
 ## 失败产物与 CI
 
 `--artifacts test-results/e2e` 选择诊断目录。每个用例记录应用输出和隔离的操作日志。失败时还保存最后的视图树，并在可用时保存裁剪到测试应用客户窗口的截图。`--junitxml` 输出 JUnit XML 报告。
@@ -206,14 +195,12 @@ X11 滚轮输入是一批原生刻度事件。暂停测试须等同一完全可�
 
 重命名审查将这些用例扩展为四种渲染器／内容组合。由 rustc 一次编译的原生 Rust 夹具会被识别为 difft，但渲染时返回畸形 JSON；调用记录证明两个非空部分都先尝试 difft，才回退 Git。各部分专属断言检查精确新旧行号，再在 Stage 和 Unstage 后重复预览，验证索引 blob 身份、原路径恢复、工作字节不变和空部分隐藏。已安装 difft 的 Rust 用例现会在 difft 可用时拒绝静默回退。变异验证交换两个渲染部分而保持组合文本不变：新的已编辑重命名桌面用例拒绝错误的暂存旧行。此次审查未改变生产行为。
 
-<a id="progressive-git-history"></a>
 ## 渐进式 Git 历史
 
 历史限制分别应用于每个选定本地 tip、匹配远端 tip 和各子模块历史。每次读取多探测一个提交以判断是否耗尽，按 OID 合并，仅对选定并集拓扑排序：子在父前，以时间／OID 打破平局。展开时每个前缀增加 200，在后台执行器重建；目前会重新读取有界前缀，不在请求之间保留 libgit2 walker。共享提交只出现一次。
 
 独立于工具包的 `HistoryHost` 管理请求代次和重复／已取消完成处理。GPUI 适配器管理可取消任务，发布前验证仓库、选择、分支过滤器、导航修订和前缀。已有节点默认位置和已保存用户坐标保持稳定，新行追加到旧布局下方。画布接近底部的加载在读取失败后暂停，直到显式重试。工具栏为 List 和 Canvas 提供同样的展开，所有历史耗尽时隐藏展开控件。
 
-<a id="navigator-design-verification"></a>
 ## 导航界面设计验证
 
 `test_design_flows.py` 覆盖概览导航、不 checkout 的键盘分支过滤、只重试失败批处理远端、取消批量切换预览，以及取消暂存的只读冲突预览。确认测试显式回应提示；打开提示的操作不能先等待修改完成再回应。`test_appearance.py` 验证主题持久化及保留的导航／选择状态。

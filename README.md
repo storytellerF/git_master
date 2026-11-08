@@ -1,9 +1,7 @@
-<a id="git-master"></a>
 # Git Master
 
 基于 [GPUI](https://www.gpui.rs/) 构建的桌面应用，可一眼查看父目录下所有 Git 仓库的状态。打开工作区目录后，左侧栏展示各仓库是否干净、当前分支和领先／落后提交数，右侧面板展示仓库详情与提交历史。
 
-<a id="features"></a>
 ## 功能
 
 - **工作区导航**：工作区菜单在本地记住最近八个目录。可按名称或路径搜索仓库，并按 All／Modified／To sync 过滤。仓库分为 Needs attention 与 Other repositories 两组；过滤保留已选仓库。展开的子模块仍显示在父仓库下。
@@ -31,14 +29,12 @@
 - **子模块初始化**：未初始化子模块显示状态和 URL，可在右侧用 `git submodule update --init` 初始化。
 - **非阻塞 UI**：所有 Git I/O 在后台线程运行，扫描仓库和加载详情时界面保持响应。过时的扫描与详情结果自动丢弃。
 
-<a id="technology-stack"></a>
 ## 技术栈
 
 - [`gpui`](https://crates.io/crates/gpui)：GPU 加速的 Rust UI 框架。
 - [`git2`](https://crates.io/crates/git2)：libgit2 的 Rust 绑定。
 - [`chrono`](https://crates.io/crates/chrono)：提交时间戳格式化。
 
-<a id="build-and-run"></a>
 ## 构建与运行
 
 需要 Rust 工具链（edition 2024，建议使用较新的稳定版）。
@@ -54,7 +50,6 @@ cargo build --release
 
 启动后，打开 **Git Master** 旁的工作区菜单，选择 **打开工作区**，再选择包含多个 Git 仓库的父目录。
 
-<a id="project-structure"></a>
 ## 项目结构
 
 ```
@@ -72,7 +67,6 @@ src/
     └── theme.rs         # Color constants
 ```
 
-<a id="views"></a>
 ## 视图
 
 - **Changes** 按暂存、未暂存、未跟踪和冲突分组。预览根据所选组比较 HEAD／索引或索引／工作树；Stage 和 Unstage 保留工作文件。冲突显示有界只读当前文件、可独立折叠的索引阶段视图及外部恢复步骤。将冲突标为已解决时，必须先确认再暂存；不会自动合并或验证解决结果。
@@ -80,7 +74,6 @@ src/
 - **Overview** 展示仓库路径、分支、HEAD、Git 状态、变更、远端比较和子模块，并提供复制、打开、fetch 和导航操作。远端地址经过脱敏；比较选择不修改 Git 上游配置。
 - **Canvas** 显示本地及已获取远端的分支尖端引用卡片，远端符号 HEAD 可用时也显示。细引用线从每张标签卡片直接连到其提交，并跟随拖动；它们与提交父连接和子模块连接不同。支持缩放、适合窗口、返回 HEAD 和重置布局。适合窗口会包含每张已加载卡片，即使历史很长；概览比例下泳道标题保持分开。概览保留已加载范围；可显式 Load more，或放大后平移接近边界以自动加载。父连接与子模块 gitlink 分开。窄窗口优先折叠提交详情，并提供显式展开控件。
 
-<a id="notes"></a>
 ## 说明
 
 
